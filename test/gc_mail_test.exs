@@ -1,4 +1,4 @@
-defmodule GCMTest do
+defmodule GCMailTest do
   use ExUnit.Case
   doctest GCMail
 

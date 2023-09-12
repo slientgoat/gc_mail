@@ -39,4 +39,19 @@ defmodule GCMail.MailFixtures do
     {:noreply, state} = Mailer.handle_continue(continue, state)
     %{state: state}
   end
+
+  def new_mail(opts \\ []) do
+    Enum.reduce(opts, %GCMail.Mail{}, &do_new/2)
+  end
+
+  defp do_new({key, value}, mail) when key in [:id, :targets] do
+    Map.put(mail, key, value)
+  end
+
+  defp do_new({key, value}, _mail) do
+    raise ArgumentError,
+      message: """
+      invalid field `#{inspect(key)}` (value=#{inspect(value)}) for GCMail.Builder.new/1.
+      """
+  end
 end

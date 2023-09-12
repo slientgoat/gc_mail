@@ -7,9 +7,19 @@ defmodule GCMail.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      {GCMail.Cache, []}
-    ]
+    children =
+      if Mix.env() == :dev do
+        [
+          {GCMail.MailCache, []},
+          {GCMail.EmailCache, []},
+          {GCMail.Sup, handler: GCMail.SimpleHandler}
+        ]
+      else
+        [
+          {GCMail.MailCache, []},
+          {GCMail.EmailCache, []}
+        ]
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

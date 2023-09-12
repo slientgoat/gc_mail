@@ -49,7 +49,7 @@ defmodule GCMail.MailTest do
       {:noreply, state} = Mailer.handle_info(:loop_handle_prepare_mails, state)
       assert_receive(:loop_handle_prepare_mails, 10)
       assert 800 == length(state.prepare_mails)
-      assert 0 == length(state.personal_mail_ids)
+      assert 0 == length(state.prepare_emails)
     end
 
     test "will handle 200 items if prepare_mails has 1000 global personal mail items in once loop",
@@ -62,7 +62,7 @@ defmodule GCMail.MailTest do
         |> Enum.reduce(state, fn _, acc ->
           {:noreply, acc} =
             Mailer.handle_cast(
-              {:deliver, valid_personal_system_mail(%{to: valid_to(2)})},
+              {:deliver, valid_personal_system_mail(%{targets: valid_to(2)})},
               acc
             )
 
@@ -76,7 +76,30 @@ defmodule GCMail.MailTest do
 
       assert_receive(:loop_handle_prepare_mails, 10)
       assert 800 == length(state.prepare_mails)
-      assert 400 == length(state.personal_mail_ids)
+      assert 400 == length(state.prepare_emails)
     end
+  end
+
+  describe "cache_mails/1" do
+    ids = [System.unique_integer([:positive]), System.unique_integer([:positive])]
+    mails = Enum.map(ids, &new_mail(id: &1))
+    Mailer.cache_mails(mails)
+    assert mails == GCMail.MailCache.get_all(ids) |> Map.values()
+  end
+
+  describe "cache_emails/1" do
+    mail_id1 = System.unique_integer([:positive])
+    mail_id2 = System.unique_integer([:positive])
+    mail_ids = [mail_id1, mail_id2]
+    targets = [1, 2]
+
+    emails =
+      Enum.map(mail_ids, &new_mail(id: &1, targets: targets))
+      |> Mailer.make_prepare_emails()
+
+    Mailer.cache_emails(emails)
+    keys = for mail_id <- mail_ids, to <- targets, do: "#{to}|#{mail_id}"
+    expert = [{1, mail_id1}, {1, mail_id2}, {2, mail_id1}, {2, mail_id2}]
+    assert expert == GCMail.EmailCache.get_all(keys) |> Map.values()
   end
 end

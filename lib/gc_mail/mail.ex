@@ -8,7 +8,7 @@ defmodule GCMail.Mail do
   schema "mail" do
     field(:type, GCMail.Type)
     field(:from, :string)
-    field(:to, {:array, :integer})
+    field(:targets, {:array, :integer})
     field(:cfg_id, :integer)
     field(:title, :string)
     field(:body, :string)
@@ -20,7 +20,7 @@ defmodule GCMail.Mail do
   end
 
   @required_fields ~w(type send_at)a
-  @system_mail_fields ~w(type cfg_id assigns attaches send_at trigger_at ttl from to)a
+  @system_mail_fields ~w(type from targets cfg_id assigns attaches send_at trigger_at ttl)a
   @system_mail_required_fields @required_fields ++ ~w(cfg_id)a
   def system_mail_changeset(mail, attrs) do
     mail

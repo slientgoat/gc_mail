@@ -1,4 +1,4 @@
-defmodule GCMail.Cache do
+defmodule GCMail.MailCache do
   use Nebulex.Cache,
     otp_app: :gc_mail,
     adapter: Nebulex.Adapters.Multilevel

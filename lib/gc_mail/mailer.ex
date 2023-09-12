@@ -5,7 +5,7 @@ defmodule GCMail.Mailer do
   import ShorterMaps
   require Logger
 
-  defstruct id: nil, loop_interval: nil, prepare_mails: [], personal_mail_ids: [], handler: nil
+  defstruct id: nil, loop_interval: nil, prepare_mails: [], prepare_emails: [], handler: nil
 
   @worker_num 8
   @loop_intervals Enum.to_list(0..@worker_num) |> Enum.map(&(3000 + &1 * 10)) |> List.to_tuple()
@@ -64,11 +64,7 @@ defmodule GCMail.Mailer do
     {:ok, %M{id: id, loop_interval: loop_interval, handler: handler}, {:continue, :initialize}}
   end
 
-  def handle_continue(:initialize, ~M{%M id,handler} = state) do
-    if id == 1 do
-      handler.init()
-    end
-
+  def handle_continue(:initialize, ~M{%M } = state) do
     {:noreply, state}
   end
 
@@ -88,18 +84,18 @@ defmodule GCMail.Mailer do
 
   def handle_info(
         :loop_handle_prepare_mails,
-        ~M{%M handler,prepare_mails,loop_interval,personal_mail_ids} = state
+        ~M{%M handler,prepare_mails,loop_interval,prepare_emails} = state
       ) do
     with {:ok, prepare_mails, new_mail_ids} <- handle_prepare_mails(handler, prepare_mails) do
-      personal_mail_ids = new_mail_ids ++ personal_mail_ids
+      prepare_emails = new_mail_ids ++ prepare_emails
 
-      if personal_mail_ids != [] do
-        loop_handle_personal_mail_ids()
+      if prepare_emails != [] do
+        loop_handle_prepare_emails()
       end
 
       loop_handle_prepare_mails(loop_interval)
 
-      {:noreply, ~M{state|prepare_mails,personal_mail_ids}}
+      {:noreply, ~M{state|prepare_mails,prepare_emails}}
     else
       _ ->
         loop_handle_prepare_mails(loop_interval)
@@ -107,11 +103,11 @@ defmodule GCMail.Mailer do
     end
   end
 
-  def handle_info(:loop_handle_personal_mail_ids, ~M{%M handler,personal_mail_ids} = state) do
-    with {:ok, personal_mail_ids} <-
-           handle_personal_mail_ids(handler, personal_mail_ids) do
-      loop_handle_personal_mail_ids()
-      {:noreply, ~M{state|personal_mail_ids}}
+  def handle_info(:loop_handle_prepare_emails, ~M{%M handler,prepare_emails} = state) do
+    with {:ok, prepare_emails} <-
+           handle_prepare_emails(handler, prepare_emails) do
+      loop_handle_prepare_emails()
+      {:noreply, ~M{state|prepare_emails}}
     else
       _ ->
         {:noreply, state}
@@ -127,19 +123,24 @@ defmodule GCMail.Mailer do
     {mails, rest} = prepare_mails |> Enum.reverse() |> Enum.split(@batch_num)
 
     with {:ok, mails} <- handler.save_mails(mails),
-         :ok <- handler.cache_mails(mails) do
-      personal_mail_ids = take_personal_mail_ids(mails)
-      {:ok, rest, personal_mail_ids}
+         :ok <- cache_mails(mails) do
+      prepare_emails = make_prepare_emails(mails)
+      {:ok, rest, prepare_emails}
     else
       _e ->
         :ignore
     end
   end
 
-  defp take_personal_mail_ids(mails) do
+  def cache_mails(mails) do
+    Enum.map(mails, &{&1.id, &1})
+    |> GCMail.MailCache.put_all()
+  end
+
+  def make_prepare_emails(mails) do
     mails
     |> Enum.map(fn x ->
-      List.wrap(x.to) |> Enum.map(&{&1, x.id})
+      List.wrap(x.targets) |> Enum.map(&{&1, x.id})
     end)
     |> Enum.concat()
   end
@@ -148,11 +149,10 @@ defmodule GCMail.Mailer do
     Process.send_after(self(), :loop_handle_prepare_mails, loop_interval)
   end
 
-  defp handle_personal_mail_ids(handler, mail_ids) do
-    {mail_ids, rest} = mail_ids |> Enum.reverse() |> Enum.split(@batch_num)
-
-    with {:ok, mail_ids} <- handler.save_role_mails(mail_ids),
-         :ok <- handler.cache_role_mails(mail_ids) do
+  defp handle_prepare_emails(handler, prepare_emails) do
+    with {prepare_emails, rest} <- take_prepare_emails(prepare_emails),
+         {:ok, prepare_emails} <- handler.save_emails(prepare_emails),
+         :ok <- cache_emails(prepare_emails) do
       {:ok, rest}
     else
       _e ->
@@ -160,7 +160,16 @@ defmodule GCMail.Mailer do
     end
   end
 
-  defp loop_handle_personal_mail_ids(loop_interval \\ 100) do
-    Process.send_after(self(), :loop_handle_personal_mail_ids, loop_interval)
+  def cache_emails(emails) do
+    Enum.map(emails, fn {to, mail_id} = e -> {"#{to}|#{mail_id}", e} end)
+    |> GCMail.EmailCache.put_all()
+  end
+
+  defp loop_handle_prepare_emails(loop_interval \\ 100) do
+    Process.send_after(self(), :loop_handle_prepare_emails, loop_interval)
+  end
+
+  def take_prepare_emails(prepare_emails) do
+    prepare_emails |> Enum.reverse() |> Enum.split(@batch_num)
   end
 end

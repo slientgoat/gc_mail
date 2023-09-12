@@ -7,10 +7,8 @@ defmodule GCMail.Sup do
 
   @impl true
 
-  def init(_opts) do
-    children = [
-      # {Mail.Personal, []}
-    ]
+  def init(opts) do
+    children = GCMail.Mailer.start_args(opts)
 
     Supervisor.init(children, strategy: :one_for_one)
   end
