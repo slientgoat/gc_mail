@@ -2,7 +2,7 @@ defmodule GCMail.SimpleHandler do
   @behaviour GCMail.Behaviour
 
   @ets_mail Module.concat(__MODULE__, Mail)
-  @ets_role_mail Module.concat(__MODULE__, PersonalMail)
+  @ets_email Module.concat(__MODULE__, Email)
   def init() do
     :ets.new(@ets_mail, [
       :named_table,
@@ -10,7 +10,7 @@ defmodule GCMail.SimpleHandler do
       {:write_concurrency, true}
     ])
 
-    :ets.new(@ets_role_mail, [
+    :ets.new(@ets_email, [
       :named_table,
       :set,
       {:read_concurrency, true},
@@ -25,7 +25,7 @@ defmodule GCMail.SimpleHandler do
     {:ok, mails}
   end
 
-  def save_role_mails(mails) do
+  def save_emails(mails) do
     mails = Enum.map(mails, &Map.put(&1, :id, System.unique_integer([:positive])))
     {:ok, mails}
   end
@@ -35,8 +35,8 @@ defmodule GCMail.SimpleHandler do
     :ok
   end
 
-  def cache_role_mails(mails) do
-    Enum.map(mails, &:ets.insert(@ets_role_mail, {&1.id, &1}))
+  def cache_emails(mails) do
+    Enum.map(mails, &:ets.insert(@ets_email, {&1.id, &1}))
     :ok
   end
 
@@ -51,14 +51,14 @@ defmodule GCMail.SimpleHandler do
     end
   end
 
-  def lookup_role_mails(to) do
-    :ets.lookup(@ets_role_mail, to)
+  def lookup_emails(to) do
+    :ets.lookup(@ets_email, to)
     |> case do
       [] ->
         nil
 
-      role_mails ->
-        role_mails
+      emails ->
+        emails
     end
   end
 end

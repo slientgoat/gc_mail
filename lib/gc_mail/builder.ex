@@ -1,7 +1,7 @@
 defmodule GCMail.Builder do
   alias GCMail.Mail
-  @default_retention_time 90 * 86400
-  def default_retention_time(), do: @default_retention_time
+  @default_ttl 90 * 86400
+  def default_ttl(), do: @default_ttl
 
   @callback cfg_ids() :: list(integer())
   def cfg_ids() do
@@ -22,9 +22,9 @@ defmodule GCMail.Builder do
   end
 
   defp ensure_common_attrs(attrs) do
-    # ensure_key_exist(attrs, :create_time, Util.unixtime())
     attrs
-    |> ensure_key_exist(:retention_time, @default_retention_time)
+    |> ensure_key_exist(:ttl, @default_ttl)
+    |> ensure_key_exist(:send_at, System.os_time(:second))
   end
 
   defp ensure_key_exist(attrs, key, value) do

@@ -16,7 +16,7 @@ defmodule GCMail.SimpleHandlerTest do
   end
 
   describe "get_mail/1" do
-    setup [:create_server]
+    setup [:create_mailer]
 
     test "does not return the mail if the mail does not exist" do
       refute SimpleHandler.get_mail(1)
@@ -24,7 +24,7 @@ defmodule GCMail.SimpleHandlerTest do
   end
 
   describe "insert_to_cache/1" do
-    setup [:create_server]
+    setup [:create_mailer]
 
     test "will return ok when insert success" do
       {:ok, mails} =

@@ -6,32 +6,34 @@ defmodule GCMail.Mail do
   @primary_key {:id, :id, autogenerate: true}
   @type id :: integer()
   schema "mail" do
-    field(:mail_type, GCMail.Enums.MailType)
+    field(:type, GCMail.Type)
+    field(:from, :string)
+    field(:to, {:array, :integer})
     field(:cfg_id, :integer)
     field(:title, :string)
     field(:body, :string)
-    field(:args, {:array, :string})
+    field(:assigns, {:array, :string})
     field(:attaches, {:array, :integer})
-    field(:create_time, :integer)
-    field(:trigger_time, :integer)
-    field(:retention_time, :integer)
-    field(:from, :string)
-    field(:to, {:array, :integer})
+    field(:send_at, :integer)
+    field(:trigger_at, :integer)
+    field(:ttl, :integer)
   end
 
-  @system_mail_fields ~w(mail_type cfg_id args attaches create_time trigger_time retention_time from to)a
-  @system_mail_required_fields ~w(mail_type cfg_id)a
+  @required_fields ~w(type send_at)a
+  @system_mail_fields ~w(type cfg_id assigns attaches send_at trigger_at ttl from to)a
+  @system_mail_required_fields @required_fields ++ ~w(cfg_id)a
   def system_mail_changeset(mail, attrs) do
     mail
     |> cast(attrs, @system_mail_fields)
+    |> validate_inclusion(:type, GCMail.Type.system())
     |> validate_required(@system_mail_required_fields)
-    |> validate_args()
+    |> validate_assigns()
     |> validate_attaches()
   end
 
-  def validate_args(changeset) do
+  def validate_assigns(changeset) do
     changeset
-    |> validate_length(:args, min: 0, max: 100)
+    |> validate_length(:assigns, min: 0, max: 100)
   end
 
   def validate_attaches(changeset) do
