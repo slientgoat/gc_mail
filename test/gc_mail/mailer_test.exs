@@ -8,7 +8,6 @@ defmodule GCMail.MailTest do
 
     test "submit global mail with invalid mail", %{state: state} do
       {:noreply, state} = Mailer.handle_cast({:deliver, "invalid mail"}, state)
-
       assert [] == state.prepare_mails
     end
 
@@ -19,25 +18,24 @@ defmodule GCMail.MailTest do
     end
   end
 
-  describe "handle_info(:loop,state)" do
+  describe "handle_prepare_mails/1" do
     setup [:create_mailer]
 
-    test "will do nothing if prepare_mails is empty in once loop", %{state: state} do
+    test "will do nothing if prepare_mails is empty", %{state: state} do
       loop_interval = 1
       state = put_in(state.loop_interval, loop_interval)
       assert 0 == length(state.prepare_mails)
-      {:noreply, state} = Mailer.handle_info(:loop_handle_prepare_mails, state)
-      assert_receive(:loop_handle_prepare_mails, 10)
+      state = Mailer.handle_prepare_mails(state)
       assert 0 == length(state.prepare_mails)
     end
 
-    test "will handle 200 items if prepare_mails has 1000 global system mail items in once loop",
+    test "will handle [#{Mailer.batch_num()}] items if prepare_mails has 1000 global system mail items",
          %{state: state} do
-      loop_interval = 1
-      state = put_in(state.loop_interval, loop_interval)
+      total_num = 1000
+      batch_num = Mailer.batch_num()
 
       state =
-        Enum.to_list(1..1000)
+        Enum.to_list(1..total_num)
         |> Enum.reduce(state, fn _, acc ->
           {:noreply, acc} =
             Mailer.handle_cast({:deliver, valid_global_system_mail()}, acc)
@@ -45,61 +43,64 @@ defmodule GCMail.MailTest do
           acc
         end)
 
-      assert 1000 == length(state.prepare_mails)
-      {:noreply, state} = Mailer.handle_info(:loop_handle_prepare_mails, state)
-      assert_receive(:loop_handle_prepare_mails, 10)
-      assert 800 == length(state.prepare_mails)
+      assert batch_num <= total_num
+      assert total_num == length(state.prepare_mails)
+      state = Mailer.handle_prepare_mails(state)
+      assert batch_num == total_num - length(state.prepare_mails)
       assert 0 == length(state.prepare_emails)
     end
 
-    test "will handle 200 items if prepare_mails has 1000 global personal mail items in once loop",
+    test "will handle [#{Mailer.batch_num()}] items if prepare_mails has 1000 global personal mail items",
          %{state: state} do
-      loop_interval = 1
-      state = put_in(state.loop_interval, loop_interval)
+      total_num = 1000
+      batch_num = Mailer.batch_num()
+      target_num = 2
 
       state =
-        Enum.to_list(1..1000)
+        Enum.to_list(1..total_num)
         |> Enum.reduce(state, fn _, acc ->
           {:noreply, acc} =
             Mailer.handle_cast(
-              {:deliver, valid_personal_system_mail(%{targets: valid_to(2)})},
+              {:deliver, valid_personal_system_mail(%{targets: valid_to(target_num)})},
               acc
             )
 
           acc
         end)
 
-      assert 1000 == length(state.prepare_mails)
-
-      {:noreply, state} =
-        Mailer.handle_info(:loop_handle_prepare_mails, state)
-
-      assert_receive(:loop_handle_prepare_mails, 10)
-      assert 800 == length(state.prepare_mails)
-      assert 400 == length(state.prepare_emails)
+      assert total_num == length(state.prepare_mails)
+      state = Mailer.handle_prepare_mails(state)
+      assert batch_num == total_num - length(state.prepare_mails)
+      assert batch_num * target_num == length(state.prepare_emails)
     end
   end
 
-  describe "cache_mails/1" do
-    ids = [System.unique_integer([:positive]), System.unique_integer([:positive])]
-    mails = Enum.map(ids, &new_mail(id: &1))
-    Mailer.cache_mails(mails)
-    assert mails == GCMail.MailCache.get_all(ids) |> Map.values()
-  end
+  describe "handle_prepare_emails/1" do
+    setup [:create_mailer]
 
-  describe "cache_emails/1" do
-    mail_id1 = System.unique_integer([:positive])
-    mail_id2 = System.unique_integer([:positive])
-    mail_ids = [mail_id1, mail_id2]
-    targets = [1, 2]
+    test "will handle nothing if prepare_emails is empty", %{state: state} do
+      loop_interval = 1
+      state = put_in(state.loop_interval, loop_interval)
+      assert 0 == length(state.prepare_emails)
+      state = Mailer.handle_prepare_emails(state)
+      assert 0 == length(state.prepare_emails)
+    end
 
-    emails =
-      Enum.map(mail_ids, &new_mail(id: &1, targets: targets))
-      |> Mailer.make_prepare_emails()
+    test "will fetch emails from cache if prepare_emails not empty", %{state: state} do
+      mail_id1 = System.unique_integer([:positive])
+      mail_id2 = System.unique_integer([:positive])
+      mail_ids = [mail_id1, mail_id2]
+      targets = [1, 2]
+      prepare_emails = make_prepare_emails(mail_ids, targets)
 
-    Mailer.cache_emails(emails)
-    keys = for mail_id <- mail_ids, to <- targets, do: "#{to}|#{mail_id}"
-    expert = [{1, mail_id1}, {1, mail_id2}, {2, mail_id1}, {2, mail_id2}]
-    assert expert == GCMail.EmailCache.get_all(keys) |> Map.values()
+      state =
+        %{state | prepare_emails: prepare_emails}
+        |> Mailer.handle_prepare_emails()
+
+      assert [] == state.prepare_emails
+
+      fake_email_ids = make_fake_email_ids(mail_ids, targets)
+      assert [] == fake_email_ids -- (GCMail.EmailCache.get_all(fake_email_ids) |> Map.keys())
+    end
   end
 end

@@ -54,4 +54,17 @@ defmodule GCMail.MailFixtures do
       invalid field `#{inspect(key)}` (value=#{inspect(value)}) for GCMail.Builder.new/1.
       """
   end
+
+  def make_prepare_emails(mail_ids, targets) do
+    Enum.map(mail_ids, &new_mail(id: &1, targets: targets))
+    |> GCMail.Mailer.make_prepare_emails()
+  end
+
+  def make_fake_email_ids(mail_ids, targets) do
+    for mail_id <- mail_ids, to <- targets, do: fake_email_id(mail_id, to)
+  end
+
+  def fake_email_id(mail_id, to) do
+    "#{to}|#{mail_id}"
+  end
 end

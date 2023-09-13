@@ -4,6 +4,7 @@ defmodule GCMail do
   """
 
   use EnumType
+  alias GCMail.Builder
 
   defenum Type do
     value(PersonalSystem, 1)
@@ -18,11 +19,43 @@ defmodule GCMail do
     def custom, do: [GlobalCustom, PersonalCustom]
   end
 
-  alias GCMail.Builder
+  defmacro __using__(opts) do
+    quote bind_quoted: [opts: opts] do
+      @behaviour GCMail.Behaviour
+      alias GCMail.Mailer
 
-  def build(Type.GlobalSystem = type, attrs) do
-    attrs
-    |> Enum.into(%{type: type})
-    |> Builder.new_system_mail()
+      @opts opts
+
+      def child_spec(opts) do
+        %{
+          id: __MODULE__,
+          start: {__MODULE__, :start_link, [opts]},
+          type: :supervisor
+        }
+      end
+
+      def start_link(opts \\ []) do
+        GCMail.Supervisor.start_link(__MODULE__, opts)
+      end
+
+      def build_global_system(attrs) do
+        attrs
+        |> Enum.into(%{type: Type.GlobalSystem})
+        |> Builder.new_system_mail()
+      end
+
+      def build_personal_system(attrs) do
+        attrs
+        |> Enum.into(%{type: Type.PersonalSystem})
+        |> Builder.new_system_mail()
+      end
+
+      def cast_email_id(email) do
+        email
+      end
+
+      defdelegate deliver(mail), to: Mailer
+      defoverridable cast_email_id: 1
+    end
   end
 end

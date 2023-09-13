@@ -1,5 +1,6 @@
 defmodule GCMail.Builder do
   alias GCMail.Mail
+  alias GCMail.Email
   @default_ttl 90 * 86400
   def default_ttl(), do: @default_ttl
 
@@ -29,5 +30,11 @@ defmodule GCMail.Builder do
 
   defp ensure_key_exist(attrs, key, value) do
     Enum.into(attrs, Map.put(%{}, key, value))
+  end
+
+  @spec new_email(map) :: %Email{}
+  def new_email(attrs) when is_map(attrs) do
+    %Email{}
+    |> Map.merge(attrs)
   end
 end
