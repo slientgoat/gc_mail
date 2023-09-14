@@ -1,5 +1,4 @@
 defmodule GCMail.MailFixtures do
-  alias GCMail.Type
   alias GCMail.Builder
   alias GCMail.Mailer
 
@@ -10,8 +9,8 @@ defmodule GCMail.MailFixtures do
   def valid_global_system_mail(attrs \\ %{}) do
     {:ok, mail} =
       attrs
-      |> Enum.into(%{cfg_id: 1, type: Type.GlobalSystem})
-      |> Builder.new_system_mail()
+      |> Enum.into(%{cfg_id: 1})
+      |> Builder.build_global_system_mail()
 
     mail
   end
@@ -19,8 +18,8 @@ defmodule GCMail.MailFixtures do
   def valid_personal_system_mail(attrs \\ %{}) do
     {:ok, mail} =
       attrs
-      |> Enum.into(%{cfg_id: 1, type: Type.PersonalSystem})
-      |> Builder.new_system_mail()
+      |> Enum.into(%{cfg_id: 1})
+      |> Builder.build_personal_system_mail()
 
     mail
   end

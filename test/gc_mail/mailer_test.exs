@@ -1,4 +1,4 @@
-defmodule GCMail.MailTest do
+defmodule GCMail.MailerTest do
   use GCMail.DataCase
   import GCMail.MailFixtures
   alias GCMail.Mailer
