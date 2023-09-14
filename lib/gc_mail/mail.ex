@@ -58,29 +58,53 @@ defmodule GCMail.Mail do
     |> apply_action(:validate)
   end
 
-  @spec validate_global_system_mail_attrs(map) :: {:error, Ecto.Changeset.t()} | {:ok, map}
-  def validate_global_system_mail_attrs(attrs) do
+  @spec build_global_system_mail(map) :: {:error, Ecto.Changeset.t()} | {:ok, %M{}}
+  def build_global_system_mail(attrs) when is_map(attrs) do
+    attrs
+    |> Map.put(:type, Type.GlobalSystem)
+    |> validate_global_system_mail_attrs()
+  end
+
+  @spec build_personal_system_mail(map) :: {:error, Ecto.Changeset.t()} | {:ok, %M{}}
+  def build_personal_system_mail(attrs) when is_map(attrs) do
+    attrs
+    |> Map.put(:type, Type.PersonalSystem)
+    |> validate_personal_system_mail_attrs()
+  end
+
+  @spec build_global_custom_mail(map) :: {:error, Ecto.Changeset.t()} | {:ok, %M{}}
+  def build_global_custom_mail(attrs) when is_map(attrs) do
+    attrs
+    |> Map.put(:type, Type.GlobalCustom)
+    |> validate_global_custom_mail_attrs()
+  end
+
+  @spec build_personal_custom_mail(map) :: {:error, Ecto.Changeset.t()} | {:ok, %M{}}
+  def build_personal_custom_mail(attrs) when is_map(attrs) do
+    attrs
+    |> Map.put(:type, Type.PersonalCustom)
+    |> validate_personal_custom_mail_attrs()
+  end
+
+  defp validate_global_system_mail_attrs(attrs) do
     validate_attrs(attrs, Type.GlobalSystem)
     |> apply_action(:validate)
   end
 
-  @spec validate_personal_system_mail_attrs(map) :: {:error, Ecto.Changeset.t()} | {:ok, map}
-  def validate_personal_system_mail_attrs(attrs) do
+  defp validate_personal_system_mail_attrs(attrs) do
     validate_attrs(attrs, Type.PersonalSystem)
     |> validate_targets()
     |> apply_action(:validate)
   end
 
-  @spec validate_global_custom_mail_attrs(map) :: {:error, Ecto.Changeset.t()} | {:ok, map}
-  def validate_global_custom_mail_attrs(attrs) do
+  defp validate_global_custom_mail_attrs(attrs) do
     validate_attrs(attrs, Type.GlobalCustom)
     |> validate_title()
     |> validate_body()
     |> apply_action(:validate)
   end
 
-  @spec validate_personal_custom_mail_attrs(map) :: {:error, Ecto.Changeset.t()} | {:ok, map}
-  def validate_personal_custom_mail_attrs(attrs) do
+  defp validate_personal_custom_mail_attrs(attrs) do
     validate_attrs(attrs, Type.PersonalCustom)
     |> validate_title()
     |> validate_body()

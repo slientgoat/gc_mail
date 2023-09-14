@@ -71,24 +71,14 @@ defmodule GCMail.MailTest do
     assert %{body: [expert_tips]} == errors_on(changeset)
   end
 
-  describe "validate_global_system_mail_attrs/1" do
-    test "requires type,cfg_id" do
-      assert {:error, changeset} = Mail.validate_global_system_mail_attrs(%{})
+  describe "build_global_system_mail/1" do
+    test "requires cfg_id" do
+      assert {:error, changeset} = Mail.build_global_system_mail(%{})
 
-      assert %{cfg_id: ["can't be blank"], type: ["can't be blank"]} ==
-               errors_on(changeset)
+      assert %{cfg_id: ["can't be blank"]} == errors_on(changeset)
     end
 
-    test "invalid type" do
-      for type <- Type.enums(), type != Type.GlobalSystem do
-        assert {:error, changeset} =
-                 Mail.validate_global_system_mail_attrs(%{cfg_id: 1, type: type})
-
-        assert %{type: ["is invalid"]} == errors_on(changeset)
-      end
-    end
-
-    test ":targets,:title,:body will not be setup" do
+    test ":targets,:title,:body,:type will not be setup" do
       assert {:ok,
               %Mail{
                 type: Type.GlobalSystem,
@@ -102,8 +92,8 @@ defmodule GCMail.MailTest do
                 send_at: 1,
                 ttl: 1
               }} ==
-               Mail.validate_global_system_mail_attrs(%{
-                 type: Type.GlobalSystem,
+               Mail.build_global_system_mail(%{
+                 type: "type",
                  from: "from",
                  targets: [1, 2],
                  cfg_id: 1,
@@ -120,7 +110,7 @@ defmodule GCMail.MailTest do
       type = Type.GlobalSystem
 
       assert {:ok, %Mail{type: ^type, cfg_id: 1} = ret} =
-               Mail.validate_global_system_mail_attrs(%{
+               Mail.build_global_system_mail(%{
                  type: type,
                  cfg_id: 1
                })
@@ -130,21 +120,11 @@ defmodule GCMail.MailTest do
     end
   end
 
-  describe "validate_personal_system_mail_attrs/1" do
-    test "requires type,cfg_id" do
-      assert {:error, changeset} = Mail.validate_personal_system_mail_attrs(%{})
+  describe "build_personal_system_mail/1" do
+    test "requires cfg_id" do
+      assert {:error, changeset} = Mail.build_personal_system_mail(%{})
 
-      assert %{cfg_id: ["can't be blank"], type: ["can't be blank"], targets: ["can't be blank"]} ==
-               errors_on(changeset)
-    end
-
-    test "invalid type" do
-      for type <- Type.enums(), type != Type.PersonalSystem do
-        assert {:error, changeset} =
-                 Mail.validate_personal_system_mail_attrs(%{cfg_id: 1, type: type, targets: [1]})
-
-        assert %{type: ["is invalid"]} == errors_on(changeset)
-      end
+      assert %{cfg_id: ["can't be blank"], targets: ["can't be blank"]} == errors_on(changeset)
     end
 
     test ":title,:body will not be setup" do
@@ -161,8 +141,8 @@ defmodule GCMail.MailTest do
                 send_at: 1,
                 ttl: 1
               }} ==
-               Mail.validate_personal_system_mail_attrs(%{
-                 type: Type.PersonalSystem,
+               Mail.build_personal_system_mail(%{
+                 type: "type",
                  from: "from",
                  targets: [1, 2],
                  cfg_id: 1,
@@ -179,7 +159,7 @@ defmodule GCMail.MailTest do
       type = Type.PersonalSystem
 
       assert {:ok, %Mail{type: ^type, cfg_id: 1, targets: [1, 2]} = ret} =
-               Mail.validate_personal_system_mail_attrs(%{
+               Mail.build_personal_system_mail(%{
                  type: type,
                  cfg_id: 1,
                  targets: [1, 2]
@@ -190,24 +170,14 @@ defmodule GCMail.MailTest do
     end
   end
 
-  describe "validate_global_custom_mail_attrs/1" do
-    test "requires type,title,body" do
-      assert {:error, changeset} = Mail.validate_global_custom_mail_attrs(%{})
+  describe "build_global_custom_mail/1" do
+    test "requires title,body" do
+      assert {:error, changeset} = Mail.build_global_custom_mail(%{})
 
-      assert %{type: ["can't be blank"], title: ["can't be blank"], body: ["can't be blank"]} ==
-               errors_on(changeset)
+      assert %{title: ["can't be blank"], body: ["can't be blank"]} == errors_on(changeset)
     end
 
-    test "invalid type" do
-      for type <- Type.enums(), type != Type.GlobalCustom do
-        assert {:error, changeset} =
-                 Mail.validate_global_custom_mail_attrs(%{type: type, title: "t1", body: "body"})
-
-        assert %{type: ["is invalid"]} == errors_on(changeset)
-      end
-    end
-
-    test ":cfg_id,:targets will not be setup" do
+    test ":cfg_id,:targets,:type will not be setup" do
       assert {:ok,
               %Mail{
                 type: Type.GlobalCustom,
@@ -221,8 +191,8 @@ defmodule GCMail.MailTest do
                 send_at: 1,
                 ttl: 1
               }} ==
-               Mail.validate_global_custom_mail_attrs(%{
-                 type: Type.GlobalCustom,
+               Mail.build_global_custom_mail(%{
+                 type: "type",
                  from: "from",
                  targets: "ignore",
                  cfg_id: "ignore",
@@ -239,7 +209,7 @@ defmodule GCMail.MailTest do
       type = Type.GlobalCustom
 
       assert {:ok, %Mail{type: ^type, title: "title", body: "body"} = ret} =
-               Mail.validate_global_custom_mail_attrs(%{
+               Mail.build_global_custom_mail(%{
                  type: type,
                  title: "title",
                  body: "body"
@@ -250,12 +220,11 @@ defmodule GCMail.MailTest do
     end
   end
 
-  describe "validate_personal_custom_mail_attrs/1" do
-    test "requires type,title,body,targets" do
-      assert {:error, changeset} = Mail.validate_personal_custom_mail_attrs(%{})
+  describe "build_personal_custom_mail/1" do
+    test "requires title,body,targets" do
+      assert {:error, changeset} = Mail.build_personal_custom_mail(%{})
 
       assert %{
-               type: ["can't be blank"],
                title: ["can't be blank"],
                body: ["can't be blank"],
                targets: ["can't be blank"]
@@ -263,21 +232,7 @@ defmodule GCMail.MailTest do
                errors_on(changeset)
     end
 
-    test "invalid type" do
-      for type <- Type.enums(), type != Type.PersonalCustom do
-        assert {:error, changeset} =
-                 Mail.validate_personal_custom_mail_attrs(%{
-                   type: type,
-                   title: "title",
-                   body: "body",
-                   targets: [1]
-                 })
-
-        assert %{type: ["is invalid"]} == errors_on(changeset)
-      end
-    end
-
-    test ":cfg_id will not be setup" do
+    test ":cfg_id,:type will not be setup" do
       assert {:ok,
               %Mail{
                 type: Type.PersonalCustom,
@@ -291,8 +246,8 @@ defmodule GCMail.MailTest do
                 send_at: 1,
                 ttl: 1
               }} ==
-               Mail.validate_personal_custom_mail_attrs(%{
-                 type: Type.PersonalCustom,
+               Mail.build_personal_custom_mail(%{
+                 type: "type",
                  from: "from",
                  targets: [1, 2],
                  cfg_id: "ignore",
@@ -309,7 +264,7 @@ defmodule GCMail.MailTest do
       type = Type.PersonalCustom
 
       assert {:ok, %Mail{title: "title", body: "body", targets: [1, 2], type: ^type} = ret} =
-               Mail.validate_personal_custom_mail_attrs(%{
+               Mail.build_personal_custom_mail(%{
                  type: type,
                  title: "title",
                  body: "body",

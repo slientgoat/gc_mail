@@ -1,5 +1,5 @@
 defmodule GCMail.MailFixtures do
-  alias GCMail.Builder
+  alias GCMail.Mail
   alias GCMail.Mailer
 
   def make_assigns(n) do
@@ -10,7 +10,7 @@ defmodule GCMail.MailFixtures do
     {:ok, mail} =
       attrs
       |> Enum.into(%{cfg_id: 1})
-      |> Builder.build_global_system_mail()
+      |> Mail.build_global_system_mail()
 
     mail
   end
@@ -19,7 +19,7 @@ defmodule GCMail.MailFixtures do
     {:ok, mail} =
       attrs
       |> Enum.into(%{cfg_id: 1})
-      |> Builder.build_personal_system_mail()
+      |> Mail.build_personal_system_mail()
 
     mail
   end
@@ -50,7 +50,7 @@ defmodule GCMail.MailFixtures do
   defp do_new({key, value}, _mail) do
     raise ArgumentError,
       message: """
-      invalid field `#{inspect(key)}` (value=#{inspect(value)}) for GCMail.Builder.new/1.
+      invalid field `#{inspect(key)}` (value=#{inspect(value)}) for GCMail.MailFixtures.new_mail/1.
       """
   end
 

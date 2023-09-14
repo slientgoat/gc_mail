@@ -165,7 +165,7 @@ defmodule GCMail.Mailer do
 
   defp convert_to_emails(handler, prepare_emails) do
     for {to, mail_id} <- prepare_emails do
-      GCMail.Builder.build_email(%{to: to, mail_id: mail_id})
+      GCMail.Email.build_email(%{to: to, mail_id: mail_id})
       |> handler.cast_email_id()
     end
   end

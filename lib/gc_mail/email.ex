@@ -7,4 +7,10 @@ defmodule GCMail.Email do
     field(:to, :integer)
     field(:mail_id, :integer)
   end
+
+  @spec build_email(map) :: %GCMail.Email{}
+  def build_email(attrs) when is_map(attrs) do
+    %GCMail.Email{}
+    |> Map.merge(attrs)
+  end
 end
