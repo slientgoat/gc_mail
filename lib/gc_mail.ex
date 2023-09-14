@@ -6,7 +6,7 @@ defmodule GCMail do
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
       @behaviour GCMail.Behaviour
-      alias GCMail.Builder
+      alias GCMail.Mail
       alias GCMail.Mailer
 
       @opts opts
@@ -27,10 +27,10 @@ defmodule GCMail do
         email
       end
 
-      defdelegate build_global_system_mail(attrs), to: Builer
-      defdelegate build_personal_system_mail(attrs), to: Builer
-      defdelegate build_global_custom_mail(attrs), to: Builer
-      defdelegate build_personal_custom_mail(attrs), to: Builer
+      defdelegate build_global_system_mail(attrs), to: Mail
+      defdelegate build_personal_system_mail(attrs), to: Mail
+      defdelegate build_global_custom_mail(attrs), to: Mail
+      defdelegate build_personal_custom_mail(attrs), to: Mail
       defdelegate deliver(mail), to: Mailer
       defoverridable cast_email_id: 1
     end
