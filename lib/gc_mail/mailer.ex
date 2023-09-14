@@ -29,7 +29,11 @@ defmodule GCMail.Mailer do
   end
 
   def choose_worker(key) do
-    (:erlang.phash2("#{key}", @worker_num) + 1) |> via()
+    # (:erlang.phash2("#{key}", @worker_num) + 1) |> via()
+    key
+    |> :erlang.phash2()
+    |> :jchash.compute(@worker_num - 1)
+    |> via()
   end
 
   def start_args(opts) do

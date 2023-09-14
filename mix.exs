@@ -35,7 +35,9 @@ defmodule GCMail.MixProject do
       {:nebulex, "~> 2.5"},
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
-      {:telemetry, "~> 1.0"}
+      {:telemetry, "~> 1.0"},
+      {:benchee, "~> 1.1"},
+      {:jchash, "~> 0.1.4"}
     ]
   end
 end

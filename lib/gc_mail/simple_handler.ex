@@ -4,11 +4,13 @@ defmodule GCMail.SimpleHandler do
   @impl true
   def save_mails(mails) do
     mails = Enum.map(mails, &Map.put(&1, :id, System.unique_integer([:positive])))
+    Process.sleep(50)
     {:ok, mails}
   end
 
   @impl true
   def save_emails(emails) do
+    Process.sleep(50)
     {:ok, emails}
   end
 

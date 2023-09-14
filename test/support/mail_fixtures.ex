@@ -3,10 +3,14 @@ defmodule GCMail.MailFixtures do
   alias GCMail.Builder
   alias GCMail.Mailer
 
+  def make_assigns(n) do
+    Enum.to_list(1..n) |> Enum.map(&{"k#{&1}", "v#{&1}"}) |> Enum.into(%{})
+  end
+
   def valid_global_system_mail(attrs \\ %{}) do
     {:ok, mail} =
       attrs
-      |> Enum.into(%{cfg_id: valid_cfg_id(), type: Type.GlobalSystem})
+      |> Enum.into(%{cfg_id: 1, type: Type.GlobalSystem})
       |> Builder.new_system_mail()
 
     mail
@@ -15,14 +19,10 @@ defmodule GCMail.MailFixtures do
   def valid_personal_system_mail(attrs \\ %{}) do
     {:ok, mail} =
       attrs
-      |> Enum.into(%{cfg_id: valid_cfg_id(), type: Type.PersonalSystem})
+      |> Enum.into(%{cfg_id: 1, type: Type.PersonalSystem})
       |> Builder.new_system_mail()
 
     mail
-  end
-
-  def valid_cfg_id() do
-    Builder.cfg_ids() |> Enum.random()
   end
 
   def valid_attaches() do
