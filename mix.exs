@@ -5,7 +5,7 @@ defmodule GCMail.MixProject do
     [
       app: :gc_mail,
       version: "0.1.0",
-      elixir: "~> 1.15",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -36,7 +36,7 @@ defmodule GCMail.MixProject do
       {:shards, "~> 1.0"},
       {:decorator, "~> 1.4"},
       {:telemetry, "~> 1.0"},
-      {:benchee, "~> 1.1"},
+      {:benchee, "~> 1.1", only: [:dev, :test]},
       {:jchash, "~> 0.1.4"}
     ]
   end
