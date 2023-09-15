@@ -7,11 +7,10 @@ defmodule GCMail.Mailer do
 
   defstruct id: nil, loop_interval: nil, prepare_mails: [], prepare_emails: [], handler: nil
 
-  @worker_num 8
-  @loop_intervals Enum.to_list(0..@worker_num) |> Enum.map(&(3000 + &1 * 10)) |> List.to_tuple()
-  @batch_num 200
+  @worker_num System.schedulers_online()
+  @loop_intervals Enum.to_list(0..@worker_num) |> Enum.map(&(200 + &1 * 10)) |> List.to_tuple()
+  @batch_num 1000
 
-  @spec batch_num :: 200
   def batch_num, do: @batch_num
 
   @spec deliver(%GCMail.Mail{}) :: :ok
@@ -73,7 +72,7 @@ defmodule GCMail.Mailer do
 
   def handle_continue(:initialize, ~M{%M loop_interval} = state) do
     loop_handle_prepare_mails(loop_interval)
-    loop_handle_prepare_emails()
+    loop_handle_prepare_emails(loop_interval + 50)
     {:noreply, state}
   end
 
