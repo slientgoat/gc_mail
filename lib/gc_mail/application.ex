@@ -10,6 +10,9 @@ defmodule GCMail.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: GCMail.TMPSupervisor]
-    Supervisor.start_link([], opts)
+    # Supervisor.start_link(, opts)
+    # children = [{GCMail.SimpleHandler, []}]
+    children = []
+    Supervisor.start_link(children, opts)
   end
 end

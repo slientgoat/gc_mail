@@ -33,7 +33,7 @@ defmodule GCMail.Mail do
     field(:ttl, :integer)
   end
 
-  @common_fields ~w(type from assigns attaches send_at trigger_at ttl)a
+  @common_fields ~w(type from assigns attaches send_at ttl)a
 
   @require_fields %{
     Type.GlobalSystem => [:cfg_id],
@@ -51,7 +51,7 @@ defmodule GCMail.Mail do
     %M{}
     |> cast(
       attrs,
-      ~w(type from cfg_id title body targets assigns attaches send_at trigger_at ttl)a
+      ~w(type from cfg_id title body targets assigns attaches send_at ttl)a
     )
     |> then(&apply(fun, [&1]))
     |> apply_action(:validate)
