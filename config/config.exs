@@ -2,6 +2,7 @@ import Config
 
 config :gc_mail, GCMail.MailCache,
   model: :inclusive,
+  stats: true,
   levels: [
     # Default auto-generated L1 cache (local)
     {
@@ -24,6 +25,7 @@ config :gc_mail, GCMail.MailCache,
 
 config :gc_mail, GCMail.EmailCache,
   model: :inclusive,
+  stats: true,
   levels: [
     # Default auto-generated L1 cache (local)
     {
