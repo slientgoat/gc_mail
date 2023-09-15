@@ -103,4 +103,20 @@ defmodule GCMail.MailerTest do
       assert [] == fake_email_ids -- (GCMail.EmailCache.get_all(fake_email_ids) |> Map.keys())
     end
   end
+
+  describe "exec_callback/3" do
+    setup [:create_mailer]
+
+    test "", %{state: state} do
+      for fun <- [
+            :save_mails,
+            :save_emails,
+            :on_handle_mail_success,
+            :on_handle_email_success,
+            :cast_email_id
+          ] do
+        assert {:error, _} = GCMail.Mailer.exec_callback(state.handler, fun, "invalid arg")
+      end
+    end
+  end
 end

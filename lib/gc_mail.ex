@@ -35,4 +35,30 @@ defmodule GCMail do
       defoverridable cast_email_id: 1
     end
   end
+
+  def t1(num) do
+    try do
+      do_something_that_may_fail(num)
+    rescue
+      ArgumentError ->
+        IO.puts("Invalid argument given")
+    catch
+      value ->
+        IO.puts("Caught #{inspect(value)}")
+    after
+      IO.puts("This is printed regardless if it failed or succeeded")
+    end
+  end
+
+  def do_something_that_may_fail(1) do
+    raise "must more than 1"
+  end
+
+  def do_something_that_may_fail(2) do
+    throw("must more than 2")
+  end
+
+  def do_something_that_may_fail(num) do
+    2 / num
+  end
 end

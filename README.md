@@ -1,7 +1,5 @@
 # GCMail
   search 
-
-  
   
 ## mail producer
   - handle 10k mails per second
