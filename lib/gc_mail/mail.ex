@@ -30,7 +30,6 @@ defmodule GCMail.Mail do
     field(:assigns, {:map, :string})
     field(:attaches, {:array, :integer})
     field(:send_at, :integer)
-    field(:trigger_at, :integer)
     field(:ttl, :integer)
   end
 
