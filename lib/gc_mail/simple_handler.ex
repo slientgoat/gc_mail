@@ -21,7 +21,7 @@ defmodule GCMail.SimpleHandler do
   end
 
   @impl true
-  def on_callback_fail(fun, arg, error) do
+  def on_callback_fail(_fun, _arg, _error) do
     # Logger.error(fun: fun, arg: arg, error: error)
     :ok
   end
