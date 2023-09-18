@@ -109,8 +109,8 @@ defmodule GCMail.MailerTest do
 
     test "", %{state: state} do
       for fun <- [
-            :save_mails,
-            :save_emails,
+            :dump_mails,
+            :dump_emails,
             :on_handle_mail_success,
             :on_handle_email_success,
             :cast_email_id
@@ -118,5 +118,13 @@ defmodule GCMail.MailerTest do
         assert {:error, _} = GCMail.Mailer.exec_callback(state.handler, fun, "invalid arg")
       end
     end
+  end
+
+  test "cache_mails/1 with 1m num in 1 second" do
+    Enum.to_list(1..1_000_000)
+    |> Enum.map(&new_email(&1))
+    |> Mailer.cache_emails()
+
+    assert GCMail.EmailCache.count_all() >= 1_000_000
   end
 end

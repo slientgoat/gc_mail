@@ -27,12 +27,20 @@ defmodule GCMail do
         email
       end
 
+      def load_mails() do
+        []
+      end
+
+      def load_emails() do
+        []
+      end
+
       defdelegate build_global_system_mail(attrs), to: Mail
       defdelegate build_personal_system_mail(attrs), to: Mail
       defdelegate build_global_custom_mail(attrs), to: Mail
       defdelegate build_personal_custom_mail(attrs), to: Mail
       defdelegate deliver(mail), to: Mailer
-      defoverridable cast_email_id: 1
+      defoverridable cast_email_id: 1, load_mails: 0, load_emails: 0
     end
   end
 

@@ -11,8 +11,8 @@ defmodule GCMail.Application do
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: GCMail.TMPSupervisor]
     # Supervisor.start_link(, opts)
-    # children = [{GCMail.SimpleHandler, []}]
-    children = []
+    children = [{GCMail.SimpleHandler, []}]
+    # children = []
     Supervisor.start_link(children, opts)
   end
 end

@@ -43,6 +43,14 @@ defmodule GCMail.MailFixtures do
     Enum.reduce(opts, %GCMail.Mail{}, &do_new/2)
   end
 
+  def new_email(to) do
+    %GCMail.Email{
+      id: System.unique_integer([:positive]),
+      to: to,
+      mail_id: System.unique_integer([:positive])
+    }
+  end
+
   defp do_new({key, value}, mail) when key in [:id, :targets] do
     Map.put(mail, key, value)
   end

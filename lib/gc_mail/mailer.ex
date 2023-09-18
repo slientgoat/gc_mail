@@ -70,10 +70,25 @@ defmodule GCMail.Mailer do
     {:ok, %M{id: id, loop_interval: loop_interval, handler: handler}, {:continue, :initialize}}
   end
 
-  def handle_continue(:initialize, ~M{%M loop_interval} = state) do
+  def handle_continue(:initialize, ~M{%M id,handler,loop_interval} = state) do
+    if id == 0 do
+      load_mails_to_cache(handler)
+      load_emails_to_cache(handler)
+    end
+
     loop_handle_prepare_mails(loop_interval)
     loop_handle_prepare_emails(loop_interval + 50)
     {:noreply, state}
+  end
+
+  defp load_mails_to_cache(handler) do
+    load_mails(handler)
+    |> cache_mails()
+  end
+
+  def load_emails_to_cache(handler) do
+    load_emails(handler)
+    |> cache_emails()
   end
 
   def handle_cast({:deliver, mail}, ~M{%M prepare_mails} = state) do
@@ -108,7 +123,7 @@ defmodule GCMail.Mailer do
   def handle_prepare_mails(~M{%M handler,prepare_mails,prepare_emails} = state) do
     with true <- prepare_mails != [],
          {prepare_mails, tails} <- Enum.split(prepare_mails, -@batch_num),
-         {:ok, mails} <- save_mails(handler, tails),
+         {:ok, mails} <- dump_mails(handler, tails),
          :ok <- cache_mails(mails) do
       prepare_emails =
         make_prepare_emails(mails)
@@ -125,8 +140,12 @@ defmodule GCMail.Mailer do
     end
   end
 
-  defp save_mails(handler, tails) do
-    exec_callback(handler, :save_mails, tails)
+  defp dump_mails(handler, tails) do
+    exec_callback(handler, :dump_mails, tails)
+  end
+
+  defp load_mails(handler) do
+    exec_callback(handler, :load_mails)
   end
 
   def make_prepare_emails(mails) do
@@ -136,7 +155,8 @@ defmodule GCMail.Mailer do
     |> Enum.concat()
   end
 
-  defp cache_mails(mails) do
+  @spec cache_mails(any) :: :ok
+  def cache_mails(mails) do
     Enum.map(mails, &{&1.id, &1})
     |> GCMail.MailCache.put_all()
   end
@@ -148,7 +168,7 @@ defmodule GCMail.Mailer do
   def handle_prepare_emails(~M{%M handler,prepare_emails} = state) do
     with true <- prepare_emails != [] || :ignore,
          {prepare_emails, tails} <- Enum.split(prepare_emails, -@batch_num),
-         {:ok, emails} <- save_emails(handler, tails),
+         {:ok, emails} <- dump_emails(handler, tails),
          :ok <- cache_emails(emails) do
       if function_exported?(handler, :on_handle_email_success, 1) do
         exec_callback(handler, :on_handle_email_success, emails)
@@ -156,17 +176,21 @@ defmodule GCMail.Mailer do
 
       ~M{state|prepare_emails}
     else
-      _ ->
+      _e ->
         state
     end
   end
 
-  def save_emails(handler, tails) do
+  def dump_emails(handler, tails) do
     exec_callback(
       handler,
-      :save_emails,
+      :dump_emails,
       convert_to_emails(handler, tails)
     )
+  end
+
+  defp load_emails(handler) do
+    exec_callback(handler, :load_emails)
   end
 
   @spec cache_emails(list(%GCMail.Email{})) :: :ok
@@ -189,9 +213,17 @@ defmodule GCMail.Mailer do
     end
   end
 
+  def exec_callback(handler, fun) do
+    exec_callback(handler, fun, nil)
+  end
+
   def exec_callback(handler, fun, arg) do
     try do
-      apply(handler, fun, [arg])
+      if arg != nil do
+        apply(handler, fun, [arg])
+      else
+        apply(handler, fun, [])
+      end
     rescue
       error ->
         handler.on_callback_fail(fun, arg, error)

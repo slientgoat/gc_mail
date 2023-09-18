@@ -1,14 +1,19 @@
 defmodule GCMail.Behaviour do
   @type callback_fun ::
-          :save_mails
-          | :save_emails
+          :dump_mails
+          | :dump_emails
+          | :load_mails
+          | :load_emails
           | :on_handle_mail_success
           | :on_handle_email_success
           | :cast_email_id
-  @callback save_mails(list(GCMail.Mail.t())) ::
+  @callback dump_mails(list(GCMail.Mail.t())) ::
               {:error, Ecto.Changeset.t()} | {:ok, list(GCMail.Mail.t())}
-  @callback save_emails(list(GCMail.Email.t())) ::
+  @callback dump_emails(list(GCMail.Email.t())) ::
               {:error, Ecto.Changeset.t()} | {:ok, list(GCMail.Email.t())}
+
+  @callback load_mails() :: list(GCMail.Mail.t())
+  @callback load_emails() :: list(GCMail.Email.t())
 
   @callback on_handle_mail_success([GCMail.Mail.t()]) :: :ok
   @callback on_handle_email_success([GCMail.Email.t()]) :: :ok
