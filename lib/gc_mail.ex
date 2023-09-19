@@ -2,6 +2,8 @@ defmodule GCMail do
   @moduledoc """
   Documentation for `GCMail`.
   """
+  alias GCMail.Mail.Type
+  import Ex2ms
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do
@@ -23,8 +25,8 @@ defmodule GCMail do
         GCMail.Supervisor.start_link(__MODULE__, opts)
       end
 
-      def cast_email_id(email) do
-        email
+      def cast_email_id(%GCMail.Email{id: id}) do
+        id
       end
 
       def load_mails() do
@@ -40,33 +42,48 @@ defmodule GCMail do
       defdelegate build_global_custom_mail(attrs), to: Mail
       defdelegate build_personal_custom_mail(attrs), to: Mail
       defdelegate deliver(mail), to: Mailer
+      defdelegate pull_global_ids(last_global_id), to: GCMail
+      defdelegate pull_personal_ids(last_personal_id, to), to: GCMail
       defoverridable cast_email_id: 1, load_mails: 0, load_emails: 0
     end
   end
 
-  def t1(num) do
-    try do
-      do_something_that_may_fail(num)
-    rescue
-      ArgumentError ->
-        IO.puts("Invalid argument given")
-    catch
-      value ->
-        IO.puts("Caught #{inspect(value)}")
-    after
-      IO.puts("This is printed regardless if it failed or succeeded")
+  def pull_global_ids(last_global_id) do
+    global_ids_match_spec(last_global_id)
+    |> GCMail.MailCache.all()
+    |> Enum.uniq()
+  end
+
+  defp global_ids_match_spec(nil) do
+    nil
+  end
+
+  defp global_ids_match_spec(last_global_id) do
+    fun do
+      {_, key, %{type: type, send_at: send_at}, _, _}
+      when (type == Type.GlobalSystem or type == Type.GlobalCustom) and key > ^last_global_id ->
+        key
     end
   end
 
-  def do_something_that_may_fail(1) do
-    raise "must more than 1"
+  def pull_personal_ids(last_personal_id, to) do
+    personal_ids_match_spec(last_personal_id, to)
+    |> GCMail.EmailCache.all()
+    |> Enum.uniq()
   end
 
-  def do_something_that_may_fail(2) do
-    throw("must more than 2")
+  defp personal_ids_match_spec(nil, target) do
+    fun do
+      {_, key, %{to: to}, _, _} when to == ^target ->
+        key
+    end
   end
 
-  def do_something_that_may_fail(num) do
-    2 / num
+  defp personal_ids_match_spec(last_personal_id, target) do
+    fun do
+      {_, key, %{to: to, mail_id: mail_id}, _, _}
+      when to == ^target and mail_id > ^last_personal_id ->
+        key
+    end
   end
 end

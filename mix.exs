@@ -37,7 +37,8 @@ defmodule GCMail.MixProject do
       {:decorator, "~> 1.4"},
       {:telemetry, "~> 1.0"},
       {:benchee, "~> 1.1", only: [:dev, :test]},
-      {:jchash, "~> 0.1.4"}
+      {:jchash, "~> 0.1.4"},
+      {:ex2ms, "~> 1.6"}
     ]
   end
 end
