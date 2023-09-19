@@ -71,16 +71,16 @@ defmodule GCMail do
 
   defp personal_ids_match_spec(nil, target) do
     fun do
-      {_, key, %{to: to}, _, _} when to == ^target ->
-        key
+      {_, _key, %{to: to, mail_id: mail_id}, _, _} when to == ^target ->
+        mail_id
     end
   end
 
   defp personal_ids_match_spec(last_personal_id, target) do
     fun do
-      {_, key, %{to: to, mail_id: mail_id}, _, _}
+      {_, _, %{to: to, mail_id: mail_id}, _, _}
       when to == ^target and mail_id > ^last_personal_id ->
-        key
+        mail_id
     end
   end
 end
