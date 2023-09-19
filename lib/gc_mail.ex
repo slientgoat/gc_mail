@@ -25,10 +25,6 @@ defmodule GCMail do
         GCMail.Supervisor.start_link(__MODULE__, opts)
       end
 
-      def cast_email_id(%GCMail.Email{id: id}) do
-        id
-      end
-
       def load_mails() do
         []
       end
@@ -45,7 +41,7 @@ defmodule GCMail do
       defdelegate pull_global_ids(last_global_id), to: GCMail
       defdelegate pull_personal_ids(last_personal_id, to), to: GCMail
       defdelegate get_mail(mail_id), to: GCMail.MailCache, as: :get
-      defoverridable cast_email_id: 1, load_mails: 0, load_emails: 0
+      defoverridable load_mails: 0, load_emails: 0
     end
   end
 

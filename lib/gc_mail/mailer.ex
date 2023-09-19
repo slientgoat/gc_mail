@@ -185,7 +185,7 @@ defmodule GCMail.Mailer do
     exec_callback(
       handler,
       :dump_emails,
-      convert_to_emails(handler, tails)
+      cast_emails(handler, tails)
     )
   end
 
@@ -203,13 +203,19 @@ defmodule GCMail.Mailer do
     Process.send_after(self(), :loop_handle_prepare_emails, loop_interval)
   end
 
-  defp convert_to_emails(handler, prepare_emails) do
-    for {to, mail_id} <- prepare_emails do
-      exec_callback(
-        handler,
-        :cast_email_id,
+  defp cast_emails(handler, prepare_emails) do
+    if function_exported?(handler, :cast_email, 1) do
+      for {to, mail_id} <- prepare_emails do
+        exec_callback(
+          handler,
+          :cast_email,
+          GCMail.Email.build_email(%{to: to, mail_id: mail_id})
+        )
+      end
+    else
+      for {to, mail_id} <- prepare_emails do
         GCMail.Email.build_email(%{to: to, mail_id: mail_id})
-      )
+      end
     end
   end
 

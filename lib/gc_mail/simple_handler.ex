@@ -16,7 +16,7 @@ defmodule GCMail.SimpleHandler do
   end
 
   @impl true
-  def cast_email_id(%GCMail.Email{mail_id: mail_id, to: to} = email) do
+  def cast_email(%GCMail.Email{mail_id: mail_id, to: to} = email) do
     Map.put(email, :id, "#{to}|#{mail_id}")
   end
 
