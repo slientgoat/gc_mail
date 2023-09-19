@@ -71,7 +71,7 @@ defmodule GCMail.Mailer do
   end
 
   def handle_continue(:initialize, ~M{%M id,handler,loop_interval} = state) do
-    if id == 0 do
+    if id == 1 do
       load_mails_to_cache(handler)
       load_emails_to_cache(handler)
     end
