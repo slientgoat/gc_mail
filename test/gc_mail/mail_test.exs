@@ -82,7 +82,7 @@ defmodule GCMail.MailTest do
       assert {:ok,
               %Mail{
                 type: Type.GlobalSystem,
-                from: "from",
+                from: 123,
                 targets: nil,
                 cfg_id: 1,
                 title: nil,
@@ -94,7 +94,7 @@ defmodule GCMail.MailTest do
               }} ==
                Mail.build_global_system_mail(%{
                  type: "type",
-                 from: "from",
+                 from: 123,
                  targets: [1, 2],
                  cfg_id: 1,
                  title: "ignore",
@@ -131,7 +131,7 @@ defmodule GCMail.MailTest do
       assert {:ok,
               %Mail{
                 type: Type.PersonalSystem,
-                from: "from",
+                from: 123,
                 targets: [1, 2],
                 cfg_id: 1,
                 title: nil,
@@ -143,7 +143,7 @@ defmodule GCMail.MailTest do
               }} ==
                Mail.build_personal_system_mail(%{
                  type: "type",
-                 from: "from",
+                 from: 123,
                  targets: [1, 2],
                  cfg_id: 1,
                  title: "ignore",
@@ -181,7 +181,7 @@ defmodule GCMail.MailTest do
       assert {:ok,
               %Mail{
                 type: Type.GlobalCustom,
-                from: "from",
+                from: 123,
                 targets: nil,
                 cfg_id: nil,
                 title: "title",
@@ -193,7 +193,7 @@ defmodule GCMail.MailTest do
               }} ==
                Mail.build_global_custom_mail(%{
                  type: "type",
-                 from: "from",
+                 from: 123,
                  targets: "ignore",
                  cfg_id: "ignore",
                  title: "title",
@@ -236,7 +236,7 @@ defmodule GCMail.MailTest do
       assert {:ok,
               %Mail{
                 type: Type.PersonalCustom,
-                from: "from",
+                from: 123,
                 targets: [1, 2],
                 cfg_id: nil,
                 title: "title",
@@ -248,7 +248,7 @@ defmodule GCMail.MailTest do
               }} ==
                Mail.build_personal_custom_mail(%{
                  type: "type",
-                 from: "from",
+                 from: 123,
                  targets: [1, 2],
                  cfg_id: "ignore",
                  title: "title",

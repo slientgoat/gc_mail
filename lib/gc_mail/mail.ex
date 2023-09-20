@@ -22,7 +22,7 @@ defmodule GCMail.Mail do
   @type id :: integer()
   schema "mail" do
     field(:type, Type)
-    field(:from, :string)
+    field(:from, :integer)
     field(:cfg_id, :integer)
     field(:title, :string)
     field(:body, :string)
