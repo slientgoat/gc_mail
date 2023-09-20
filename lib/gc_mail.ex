@@ -38,27 +38,38 @@ defmodule GCMail do
       defdelegate build_global_custom_mail(attrs), to: Mail
       defdelegate build_personal_custom_mail(attrs), to: Mail
       defdelegate deliver(mail), to: Mailer
-      defdelegate pull_global_ids(last_global_id), to: GCMail
+      defdelegate pull_global_ids_after_unixtime(unixtime), to: GCMail
+      defdelegate pull_global_ids_after_id(id), to: GCMail
       defdelegate pull_personal_ids(last_personal_id, to), to: GCMail
       defdelegate get_mail(mail_id), to: GCMail.MailCache, as: :get
       defoverridable load_mails: 0, load_emails: 0
     end
   end
 
-  def pull_global_ids(last_global_id) do
-    global_ids_match_spec(last_global_id)
+  def pull_global_ids_after_unixtime(unixtime) when is_integer(unixtime) do
+    make_global_ids_match_after_unixtime(unixtime)
     |> GCMail.MailCache.all()
     |> Enum.uniq()
   end
 
-  defp global_ids_match_spec(nil) do
-    nil
-  end
-
-  defp global_ids_match_spec(last_global_id) do
+  defp make_global_ids_match_after_unixtime(unixtime) do
     fun do
       {_, key, %{type: type, send_at: send_at}, _, _}
-      when (type == Type.GlobalSystem or type == Type.GlobalCustom) and key > ^last_global_id ->
+      when (type == Type.GlobalSystem or type == Type.GlobalCustom) and send_at > ^unixtime ->
+        key
+    end
+  end
+
+  def pull_global_ids_after_id(id) when is_integer(id) do
+    make_global_ids_match_after_id(id)
+    |> GCMail.MailCache.all()
+    |> Enum.uniq()
+  end
+
+  defp make_global_ids_match_after_id(id) when is_integer(id) do
+    fun do
+      {_, key, %{type: type, send_at: send_at}, _, _}
+      when (type == Type.GlobalSystem or type == Type.GlobalCustom) and key > ^id ->
         key
     end
   end
