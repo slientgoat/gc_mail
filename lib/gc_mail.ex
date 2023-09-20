@@ -42,6 +42,7 @@ defmodule GCMail do
       defdelegate pull_global_ids_after_id(id), to: GCMail
       defdelegate pull_personal_ids(last_personal_id, to), to: GCMail
       defdelegate get_mail(mail_id), to: GCMail.MailCache, as: :get
+      defdelegate get_mails(mail_ids), to: GCMail.MailCache, as: :get_all
       defoverridable load_mails: 0, load_emails: 0
     end
   end
