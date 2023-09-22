@@ -133,11 +133,16 @@ defmodule GCMail.Mail do
 
   defp ensure_common_attrs(attrs) do
     attrs
-    |> ensure_key_exist(:ttl, default_ttl())
+    |> ensure_key_exist(:ttl, ttl())
     |> ensure_key_exist(:send_at, System.os_time(:second))
   end
 
+  def ttl(), do: :persistent_term.get({__MODULE__, :ttl}, nil) || default_ttl()
+
   def default_ttl(), do: 90 * 86400
+
+  def set_ttl(ttl) when is_integer(ttl), do: :persistent_term.put({__MODULE__, :ttl}, ttl)
+  def set_ttl(_), do: :error
 
   defp ensure_key_exist(attrs, key, default) do
     Enum.into(attrs, Map.new([{key, default}]))

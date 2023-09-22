@@ -37,8 +37,7 @@ defmodule GCMail.MailerTest do
       state =
         Enum.to_list(1..total_num)
         |> Enum.reduce(state, fn _, acc ->
-          {:noreply, acc} =
-            Mailer.handle_cast({:deliver, valid_global_system_mail()}, acc)
+          {:noreply, acc} = Mailer.handle_cast({:deliver, valid_global_system_mail()}, acc)
 
           acc
         end)

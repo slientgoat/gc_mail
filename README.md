@@ -1,12 +1,6 @@
 # GCMail
-  search 
-  
-## mail producer
-  - handle 10k mails per second
-## custom mail processor
-  - load()
-    keep only do in master node if there the cluster has more than one node
-  - dump()
+  the game component  of mail
+
 
 ## Installation
 

@@ -1,5 +1,5 @@
 defmodule GCMail.SimpleHandler do
-  use GCMail
+  use GCMail, ttl: 999
   require Logger
 
   @impl true

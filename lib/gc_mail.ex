@@ -33,6 +33,10 @@ defmodule GCMail do
         []
       end
 
+      def ttl() do
+        @opts[:ttl]
+      end
+
       defdelegate build_global_system_mail(attrs), to: Mail
       defdelegate build_personal_system_mail(attrs), to: Mail
       defdelegate build_global_custom_mail(attrs), to: Mail

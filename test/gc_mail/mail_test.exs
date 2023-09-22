@@ -116,7 +116,7 @@ defmodule GCMail.MailTest do
                })
 
       assert ret.send_at > 0
-      assert ret.ttl == Mail.default_ttl()
+      assert ret.ttl == Mail.ttl()
     end
   end
 
@@ -166,7 +166,7 @@ defmodule GCMail.MailTest do
                })
 
       assert ret.send_at > 0
-      assert ret.ttl == Mail.default_ttl()
+      assert ret.ttl == Mail.ttl()
     end
   end
 
@@ -216,7 +216,7 @@ defmodule GCMail.MailTest do
                })
 
       assert ret.send_at > 0
-      assert ret.ttl == Mail.default_ttl()
+      assert ret.ttl == Mail.ttl()
     end
   end
 
@@ -272,7 +272,27 @@ defmodule GCMail.MailTest do
                })
 
       assert ret.send_at > 0
-      assert ret.ttl == Mail.default_ttl()
+      assert ret.ttl == Mail.ttl()
     end
+
+    test "set ttl will be work after build mail" do
+      type = Type.PersonalCustom
+      Mail.set_ttl(188)
+
+      assert {:ok, %Mail{title: "title", body: "body", targets: [1, 2], type: ^type} = ret} =
+               Mail.build_personal_custom_mail(%{
+                 type: type,
+                 title: "title",
+                 body: "body",
+                 targets: [1, 2]
+               })
+
+      assert 188 == ret.ttl
+    end
+  end
+
+  test "set_ttl/1" do
+    Mail.set_ttl(1)
+    assert 1 == Mail.ttl()
   end
 end
